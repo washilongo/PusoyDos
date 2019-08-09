@@ -12,8 +12,18 @@ class App extends Component {
 
     // STATE
     this.state = {
-      playerCards: []
+      test: 0,
+      playerCards: [],
+      cardStats: [] // TODO: use typescript? ICardStat { SuitCount: [], NumberCount: [] }
     };
+  }
+
+  getSuit(card) {
+    return card % 4;
+  }
+
+  getNumber(card) {
+    return Math.floor(card / 4);
   }
 
   shuffleCards() {
@@ -28,17 +38,37 @@ class App extends Component {
       }
     }
 
-    playerCards.forEach((player) => {
+    this.setState({
+      playerCards: [...playerCards],
+      // test: 1
+    }, () => { this.checkCombinations() });
+  }
+
+  checkCombinations() {
+    console.log('checkCombinations() ', this.state);
+    this.setCardStats();
+  }
+
+  setCardStats() {
+    var cardStats = [{}, {}, {}, {}];
+
+    this.state.playerCards.forEach((player, i) => {
+      console.log('setCardStats(), player ', i);
+      var stats = {
+        suitCount: [0, 0, 0, 0],
+        numCount: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      };
       player.forEach((card) => {
-        var num = Math.floor(card / 4), suit = card % 4;
-        console.log(`[${card}] ${this.NUMBERS[num]} ${this.SUITS[suit]}`);
+        var suit = this.getSuit(card), num = this.getNumber(card);
+        stats.suitCount[suit]++;
+        stats.numCount[num]++;
       });
-      console.log('\n\n');
+
+      console.log(stats);
+      cardStats[i] = stats;
     });
 
-    this.setState({
-      playerCards: [...playerCards]
-    });
+    this.setState({ cardStats: [...cardStats] });
   }
 
   componentDidMount() {
@@ -46,9 +76,28 @@ class App extends Component {
   }
 
   render() {
+    const players = this.state.playerCards.map((player, i) => {
+
+      const cards = player.map((card) => {
+        var num = this.getNumber(card), suit = this.getSuit(card);
+        return (
+          <div key={`card${card}`} className="col-md-4">
+            <h4 style={{ color: suit > 1 ? 'red' : 'black' }}>{`[${card}] ${this.NUMBERS[num]} ${this.SUITS[suit]}`}</h4>
+          </div>
+        );
+      });
+
+      return (
+        <div key={i} className="col-md-6" style={{ padding: '50px' }}>
+          <h3>{`Player ${i + 1}`}</h3>
+          {cards}
+        </div>
+      );
+    });
+
     return (
       <div>
-
+        {players}
       </div>
     );
   }
